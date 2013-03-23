@@ -1,0 +1,262 @@
+
+
+body {
+
+	.sg-tagger {
+
+		position: relative;
+		display: inline-block;
+
+		>.spot {
+
+			position: absolute !important;
+			background-color: fade(black, 30%);
+			z-index: 20;
+			cursor: move;
+			outline: 1px solid rgba(255, 255, 255, .5);
+			.user-select(none);
+
+			&:hover {
+
+				&.ui-resizable {
+
+					outline: 1px solid rgba(255, 255, 255, .9);
+
+					>a.remove {
+
+						display: block;
+
+					}
+
+				}
+
+			}
+
+			&.ui-resizable {
+
+				background-color: fade(white, 30%);
+
+			}
+
+			&.ui-draggable-dragging {
+
+				.box-shadow(0 0 18px fade(black, 100%));
+
+			}
+
+			&.ui-draggable-dragging, &.ui-resizable-resizing {
+
+				background-color: fade(white, 10%);
+
+				>a.remove {
+
+					opacity: 0;
+					.transition(opacity .1s);
+
+				}
+
+				>aside {
+
+					opacity: 0;
+					.transition(opacity .1s);
+
+				}
+
+				.ui-resizable-handle {
+
+					opacity: 0;
+
+				}
+
+			}
+
+			&.creating {
+
+				>aside {
+
+					opacity: 0;
+
+				}
+
+				.ui-resizable-handle {
+
+					opacity: 0;
+
+				}
+				
+			}
+
+			&.dirty {
+
+				>aside {
+
+					>div.content {
+
+						>span {
+
+							&:after {
+
+								content: "";
+
+							}
+
+						}
+
+					}
+
+				}
+
+			}
+
+			>a.remove {
+
+				position: absolute;
+				top: -11px;
+				left: -11px;
+				display: none;
+				text-shadow: none;
+				outline: none;
+				background: none;
+				
+				&:hover {
+
+					text-decoration: none;
+					cursor: pointer;
+					.scale(1.1);
+
+					>i {
+
+						color: darken(#FF0000, 40%);
+
+					}
+
+				}
+
+				>i {
+
+					background-image: none;
+					font-size: 26px;
+					color: #000;
+
+					&:before {
+
+						border-radius: 26px;
+						background-color: #fff;
+
+					}
+
+				}
+
+			}
+
+			.hover () {
+
+				margin-left: -10px;
+				right: auto;
+				left: 50%;
+
+				>div.content {
+
+					margin-top: -7px;
+					margin-left: -50%;
+					padding: 0 10px;
+					line-height: 30px;
+					overflow: inherit;
+					text-overflow: inherit;
+					color: #FFF;
+					font-weight: normal;
+					text-shadow: none;
+					background-color: rgba(0, 0, 0, 0.8);
+					border-radius: 3px;
+					border: 1px solid rgba(255, 255, 255, .7);
+					.box-shadow(0 0 10px rgba(0, 0, 0, 0.8));
+					cursor: pointer;
+
+					&:hover {
+
+						text-decoration: underline;
+
+					}
+
+					>div.input {
+
+						margin-top: 7px;
+						margin-bottom: 7px;
+						
+					}
+
+				}
+				
+			}
+
+			&:hover {
+
+				>aside {
+
+					.hover;
+
+				}
+
+			}
+
+			>aside {
+
+				margin-left: 5px;
+				margin-right: 5px;
+				margin-top: -11px;
+				position: absolute;
+				top: 50%;
+				right: 0;
+				left: 0;
+				opacity: 1;
+
+				.transition(opacity .1s);
+
+				>div.content {
+
+					display: block;
+					text-overflow: ellipsis;
+					white-space: nowrap;
+					overflow: hidden;
+					text-align: center;
+					text-shadow: 0 1px 1px rgba( 255, 255, 255, .8);
+					font-size: 11px;
+					max-width: 100%;
+
+					>span {
+
+						&:after {
+
+							content: "click to edit";
+
+						}
+
+					}
+					
+				}
+
+				&.editing {
+
+					.hover;
+
+					>div.content {
+
+						margin-top: -10px;
+
+						>span {
+
+							display: none;
+
+						}
+
+					}
+
+				}
+
+			}
+
+		}
+
+	}
+
+}
