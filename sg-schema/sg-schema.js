@@ -203,7 +203,7 @@ var myschema = {
 
 		apply : function(_schema, _data) {
 
-			return this._validateKeys({}, _schema, _data);
+			return _.isEmpty(_schema) ? _data : this._validateKeys({}, _schema, _data);
 
 		}
 
