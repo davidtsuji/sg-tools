@@ -1,0 +1,14 @@
+{
+	"name": "sg-assets",
+	"version": "0.0.1",
+  "scripts": {
+		"start": "node index"
+	},
+	"dependencies": {
+		"uglify-js": "*",
+		"recess": "*",
+		"underscore": "*",
+		"glob": "*",
+		"async": "*"
+	}
+}
