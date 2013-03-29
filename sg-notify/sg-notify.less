@@ -1,0 +1,306 @@
+
+@import "sg-spinner.less";
+
+@background-color: white;
+
+html {
+
+	height: 100%;
+
+	>body {
+
+		height: 100%;
+
+		>.sg-notify {
+
+			@wrapper-height: 300px;
+			@dimension: 220px;
+			@font-color: #FFF;
+
+			position: fixed;
+			top: 0px;
+			bottom: 0px;
+			left: 0px;
+			right: 0px;
+			pointer-events: none;
+			text-align: center;
+			z-index: 10000;
+
+			&.hiding.out {
+
+				pointer-events: none;
+
+				>section {
+
+					pointer-evens: none;
+
+					>i {
+
+						pointer-evens: none;
+
+					}
+
+					>aside {
+
+						pointer-events: none;
+
+					}
+
+				}
+
+			}
+
+			&.hiding.block {
+
+				.box-shadow(inset 0 0 200px rgba(0, 0, 0, 0));
+				.transition(box-shadow 1s);
+
+			}
+
+			&.show.block {
+
+				.box-shadow(inset 0 0 200px rgba(0, 0, 0, 1));
+				.transition-delay(1s);
+				.transition(box-shadow 1s);
+
+			}
+
+			&.block {
+
+				height: inherit;
+				pointer-events: inherit;
+
+			}
+
+			>section {
+
+				position: absolute;
+				top: 0;
+				right: 0;
+				left: 0;
+				bottom: 0;
+
+				&.dark {
+
+					>i {
+
+						color: fade(black, 80%);
+
+					}
+
+					>aside {
+
+						color: #eee;
+						text-shadow: none;
+
+						>div.progress {
+
+							border: 2px solid fade(white, 90%);
+
+							>div.bar {
+
+								background: white;
+
+							}
+
+						}
+
+					}
+
+					>.spinner12 {
+
+						.translate3d(0, 0, 0);
+
+						>div {
+
+							background-color: fade(white, 90%);
+
+						}
+
+					}
+
+					>.back {
+
+						background-color: fade(black, 30%);
+
+					}
+
+				}
+
+				&.section-type-error {
+
+					>i {
+
+						color: rgba(199, 68, 16, .98);
+
+					}
+
+				}
+
+				&.section-type-success {
+
+					>i {
+
+						color: rgba(85, 193, 86, .98);
+
+					}
+
+				}
+
+				>i {
+
+					margin: 0 auto;
+					position: absolute;
+					top: auto;
+					margin-left: -100px;
+					min-width: 200px;
+					bottom: 65px;
+					left: 50%;
+					color: fade(black, 80%);
+					font-size: 220px;
+					z-index: 20;
+					pointer-events: auto;
+					cursor: pointer;
+					text-shadow: 0 0 2px rgba(0, 0, 0, 0.9);
+
+					-webkit-transform: scale(1);
+					.transition(-webkit-transform .1s);
+
+					&:hover {
+
+						-webkit-transform: scale(1.07);
+
+					}
+
+					&.icon-warning-sign {
+
+						font-size: 167px;
+						bottom: 80px;
+
+					}
+
+					>i {
+
+						position: absolute;
+						top: 50%;
+						left: 50%;
+						color: white;
+						font-size: 150px;
+						margin-left: -75px;
+						margin-top: -75px;
+						text-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
+
+						&.exclamation-point {
+
+							font-style: inherit;
+							font-family: Times;
+							font-size: 180px;
+							text-align: center;
+							width: 150px;
+							font-weight: bold;
+							line-height: 146px;
+
+						}
+
+					}
+
+				}
+
+				>aside {
+
+					position: absolute;
+					top: auto;
+					right: 0;
+					bottom: 0;
+					left: 0;
+					height: 100px;
+					font-size: 16px;
+					font-family: Helvetica;
+					font-weight: lighter;
+					color: #111;
+					text-shadow: 0 1px 1px rgba(255, 255, 255, .8);
+					pointer-events: auto;
+
+					z-index: 10;
+
+					display:-webkit-box;
+					-webkit-box-pack:center;
+					-webkit-box-align:center;
+
+					>div.progress {
+
+						@width: 200px;
+
+						position: absolute;
+						top: 0px;
+						left: 50%;
+						margin-left: -(@width/2);
+						width: @width;
+						height: 10px;
+						padding: 2px;
+
+						background: transparent;
+						border-radius: 15px;
+						border: 2px solid fade(black, 70%);
+
+						>div.bar {
+
+							.box-shadow(none);
+							background: fade(black, 70%);
+							border-radius: 15px;
+
+						}
+
+					}
+
+				}
+
+				>.spinner12 {
+
+					@dimension: 50px;
+					@border-width: 2px;
+					@color: #ddd;
+
+					margin-top: -(@dimension/2);
+					margin-left: -(@dimension/2);
+					position: absolute;
+					left: 50%;
+					top: 50%;
+					width: @dimension;
+					height: @dimension;
+
+					z-index: 25;
+
+					>div {
+
+						width: 8%;
+						height: 22%;
+
+					}
+
+				}
+
+				>.back {
+
+					position: absolute;
+					right: -50px;
+					bottom: -110px;
+					left: -50px;
+					height: 200px;
+
+					z-index: 1;
+
+					background-color: white;
+					-moz-filter: blur(25px);
+					-webkit-filter: blur(25px);
+					filter: blur(25px);
+
+				}
+				
+			}
+
+		}
+
+	}
+
+}

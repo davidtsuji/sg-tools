@@ -1,0 +1,103 @@
+form {
+
+	@dimension: 16px;
+	@padding-top: 1px;
+	@padding-right: ( @dimension / 2 );
+	@padding-bottom: 1px;
+	@padding-left: ( @dimension / 2 );
+
+	&:hover {
+
+		.sg-validator-message {
+
+			opacity: 1;
+
+		}
+
+	}
+
+	&.ng-dirty {
+
+		.sg-validator-message {
+
+			opacity: 1;
+
+		}
+
+	}
+
+	.sg-validator-group {
+
+		position: relative;
+
+	}
+
+	select + .sg-validator-message {
+
+		margin-right: -( (@dimension / 2) - -11 );
+
+	}
+
+	.sg-validator-message {
+
+		margin-top: -( (@dimension / 2) - 1 );
+		margin-right: -( (@dimension / 2) - 1 );
+		padding-top: @padding-top;
+		padding-right: @padding-right;
+		padding-bottom: @padding-bottom;
+		padding-left: @padding-left;
+		position: absolute;
+		background-color: #b94a47;
+		right: 0px;
+		top: 50%;
+		max-width: 0%;
+		height: ( @dimension - (@padding-top + @padding-bottom) );
+		display: block;
+		overflow: hidden;
+		border-radius: ( @dimension / 2 );
+		opacity: 0;
+		z-index: 100;
+
+		.translate3d(0, 0, 0);
+		.transition( ~"max-width .5s ease-in, opacity .5s" );
+		.user-select(none);
+
+		&:hover {
+
+			max-width: 100%;
+			cursor: help;
+
+			.transition-delay( .3s );
+			.transition( max-width .5s ease-out );
+
+			>aside {
+
+				max-width: 100%;
+				opacity: 1;
+
+			}
+
+		}
+
+		>aside {
+
+			padding-left: 15px;
+			padding-right: 15px;
+			font-size: 11px;
+			font-weight: normal;
+			text-shadow: none;
+			line-height: @dimension - 2;
+			opacity: 0;
+			max-width: 0%;
+			text-rendering: optimizelegibility;
+			color: #FFF;
+			white-space: nowrap;
+
+			.translate3d(0, 0, 0);
+			.transition( ~"opacity .5s ease-out, max-width 0.5s ease-in" );
+
+		}
+
+	}
+
+}

@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+
+	<script src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.4/underscore-min.js"></script>
+	<script src="sg-schema.js"></script>
+
+	<script>
+
+		var myschema = {
+
+			name : { _type : 'string' },
+			ismale : { _type : 'boolean', _default : true, _optional : true },
+			age : { _type : 'number' },
+			height : 'number',
+
+			address : {
+
+				street : { _type : 'string', _default : '1 smith st' },
+				postcode : { _type : 'number', _default : 4000, _optional : true },
+
+				work : {
+
+					suburb : 'string',
+					somearray : { _type : 'array', _values : [1,2,3] },
+					emptyobject : { _type : 'object', _values : [{a:'a'}, {b:'b'}] }
+
+				}
+
+			}
+
+		}
+
+		console.log( sg.schema.apply(myschema, { name : 'Max' }) );
+		console.log( sg.schema.apply({}, { name : 'Max' }) );
+
+	</script>
+
+</head>
+<body>
+	
+</body>
+</html>
