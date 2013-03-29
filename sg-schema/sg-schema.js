@@ -153,6 +153,12 @@ var myschema = {
 
 			}
 
+			if (_type == 'boolean') {
+
+				_value = _.isBoolean(_value) ? _value : _.isNumber(_value) && _value == 1
+
+			}
+
 			return _value;
 
 		},
@@ -174,7 +180,6 @@ var myschema = {
 				if (properties._type == 'object') {
 
 					if ( ! properties._optional || ! _.isUndefined(_data[_key])) {
-
 
 						_data[_key]   = _.isObject(_data[_key]) && ! _.isEmpty(_data[_key]) ? _data[_key] : properties._default;
 						_result[_key] = $this._validateKeys(_result[_key] || {}, _schema[_key], _data[_key]);
