@@ -31,8 +31,8 @@ var myschema = {
 
 	var sgSchemaClass = function(){
 
-		this.typeRx        = /(string|number|boolean|array|object)/i;
-		this.privateKeysRx = /(_type|_optional|_default|_values|_pattern)/i
+		this.typeRx        = /(string|number|boolean|array|object|date)/i;
+		this.privateKeysRx = /(_type|_optional|_default|_values|_pattern|_format)/i
 
 	}
 
@@ -53,6 +53,7 @@ var myschema = {
 					_optional : false,
 					_default  : '',
 					_values	  : [],
+					_format   : '',
 					
 				}
 
@@ -63,6 +64,7 @@ var myschema = {
 					_type     : $this.typeRx.test(_schema['_type']) ? _schema['_type'] : 'object',
 					_optional : _.isBoolean(_schema['_optional']) ? _schema['_optional'] : false,
 					_default  : ! _.isUndefined(_schema['_default']) ? _schema['_default'] : null,
+					_format   : ! _.isUndefined(_schema['_format']) ? _schema['_format'] : '',
 					_values   : ! _.isUndefined(_schema['_values'])
 								? ( _.isString(_schema['_values'])
 										? [_schema['_values']]
@@ -111,15 +113,27 @@ var myschema = {
 
 		},
 
-		_parseValue : function(_type, _value, _values) {
+		_parseValue : function(_type, _value, _values, _format) {
 
-			if (_.isString(_value)) {
+			if (_.isString(_value) || _.isNumber(_value)) {
 
 				if (_type == 'number') {
 
 					_value = _.isNaN(parseFloat(_value)) ? 0 : parseFloat(_value);
 
-				} else if (_type == 'boolean') {
+				} else if (_type == 'string') {
+
+					try {
+
+						_value = _value.toString();
+
+					} catch(e) {
+
+						_value = null;
+
+					}
+
+				}  else if (_type == 'boolean') {
 
 					_value = /^(true|1|yes)$/i.test(_value)
 
@@ -144,6 +158,28 @@ var myschema = {
 					} catch(e) {
 
 						_value = {}
+
+					}
+
+				} else if (_type == 'date') {
+
+					try {
+
+						var dte = moment(_value)
+
+						if (dte.isValid() == false) {
+
+							dte = moment(_value, 'DD/MM/YYYY')
+
+							if (dte.isValid() == false) throw Error('Cannot parse as moment date');
+
+						}
+
+						_value = dte.format(_format || '');
+
+					} catch(e) {
+
+						_value = new Date(_value);
 
 					}
 
@@ -194,11 +230,19 @@ var myschema = {
 
 				} else if ( ! properties._optional || ! _.isUndefined(_data[_key])) {
 
-					_data[_key] = $this._parseValue(properties._type, _data[_key], properties._values);
-					_result[_key] = typeof _data[_key] == properties._type ? _data[_key] : properties._default;
+					_data[_key] = $this._parseValue(properties._type, _data[_key], properties._values, properties._format);
+
+					if ( /date/.test(properties._type)) {
+
+						_result[_key] = _.isEmpty(_data[_key]) ? Date() : _data[_key];
+						
+					} else {
+
+						_result[_key] = typeof _data[_key] == properties._type ? _data[_key] : properties._default;
+
+					}
 
 				}
-
 
 			});
 
@@ -208,7 +252,23 @@ var myschema = {
 
 		apply : function(_schema, _data) {
 
-			return _.isEmpty(_schema) ? _data : this._validateKeys({}, _schema, _data);
+			var $this = this;
+
+			if (_.isArray(_data)) {
+
+				_.each(_data, function(_value, _key){
+
+					_data[_key] = _.isEmpty(_schema) ? _value : $this._validateKeys({}, _schema, _value);
+
+				});
+				
+			} else {
+
+				_data = _.isEmpty(_schema) ? _data : $this._validateKeys({}, _schema, _data);
+
+			}
+
+			return _data;
 
 		}
 
