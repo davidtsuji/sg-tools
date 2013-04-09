@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en" ng-app>
+<head>
+	<meta charset="UTF-8">
+	<title>sg</title>
+
+	<link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.min.css" rel="stylesheet">
+
+	<script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+	<script src="http://cdnjs.cloudflare.com/ajax/libs/angular.js/1.0.5/angular.min.js"></script>
+	<script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui/0.4.0/angular-ui.min.js"></script>
+	<script src="http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.1/js/bootstrap.min.js"></script>
+	<script src="sg-changed/sg-changed.js"></script>
+
+	<script>
+
+		function sgChangedController($scope){
+			
+			var changedTimer;
+
+			$scope.myInputChanged = function() {
+
+				clearTimeout(changedTimer);
+
+				$scope.myInputChanging = true;
+				$scope.myInputHasChanged = false;
+
+				sg.changed.end(function(){
+
+					$scope.myInputChanging = false;
+					$scope.myInputHasChanged = true;
+
+					$scope.$applySafe();
+
+					clearTimeout(changedTimer);
+					changedTimer = setTimeout(function(){
+						$scope.myInputHasChanged = false;
+						$scope.$applySafe();
+					}, 1000);
+
+				});
+
+			}
+
+			$scope.$applySafe = function() {
+
+				if ( ! $scope.$$phase) $scope.$apply();
+
+			}
+
+		}
+
+	</script>
+
+</head>
+<body>
+
+	
+
+	<div class="container">
+		
+		<section class="sg-changed" ng-controller="sgChangedController">
+			
+			<div class="page-header">
+				<h3>sg.changed</h3>
+			</div>
+
+			<p>setTimeout for 1 second that if called in quick succession (&lt;1s), the callback will only trigger once. Most common use is when you want an input to trigger an ajax call as soon as the user stops typing instead of every time a key is pressed.</p>
+
+			<input type="text" ng-model="myInput" ng-change="myInputChanged()" placeholder="">
+
+			<aside ng-show="myInputChanging"><small class="muted">input is changing ...</small></aside>
+			<aside ng-show="myInputHasChanged"><small style="color: #a0e22d">sg.changed triggered</small></aside>
+
+		</section>
+
+	</div>
+
+</body>
+</html>
