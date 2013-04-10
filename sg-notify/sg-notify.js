@@ -8,8 +8,6 @@
 
 		$(function(){
 
-			if ($('body>div.sg-notify').length == 0) $('body').append($this.wrapper);
-
 			$(document)
 				.on('click', 'body:not(.sg-notify-loading) .sg-notify.show > section > i', function(){
 
@@ -24,6 +22,14 @@
 	sgNotifyClass.prototype = {
 
 		constructor: sgNotifyClass,
+
+		appendWrapper : function(){
+
+			var $this = this;
+
+			if ($(document).find('body>div.sg-notify').length == 0) $('body').append($this.wrapper);
+
+		},
 
 		show: function(_delay, _type, _message, _timeout) {
 			  
@@ -43,6 +49,8 @@
 			timeout = _.isNumber(timeout) ? timeout : 1e9;
 
 			clearTimeout($this.delayShowTimeout);
+
+			$this.appendWrapper();
 
 			$this.delayShowTimeout = setTimeout(function(){
 

@@ -97,7 +97,7 @@ $(function(){
 
 		}
 
-		if (bytes > maxBytes) {
+		if (maxBytes != 0 && bytes > maxBytes) {
 
 			alert(maxBytesExceededMessage);
 			$input.val('');

@@ -213,7 +213,7 @@ var myschema = {
 
 				if ( ! _.isObject(properties)) return _result[_key] = _schema[_key];
 
-				if (properties._type == 'object') {
+				if (properties._type == 'object' && ! ( _.isObject(_data[_key]) &&  ! _.isArray(_data[_key]) ) ) {
 
 					if ( ! properties._optional || ! _.isUndefined(_data[_key])) {
 
