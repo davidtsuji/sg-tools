@@ -52,6 +52,78 @@
 
 		}
 
+		/**
+		 * sg.schema
+		 */
+		;(function(){
+
+			var myschema = {
+
+				name : 'string',
+				ismale : { _type : 'boolean', _default : true, _optional : true },
+				age : { _type : 'number' },
+				height : 'number',
+				colours : { _type : 'array' },
+
+				cars : {
+
+					civic : 'string',
+					hilux : 'string'
+
+				},
+
+				address : {
+
+					street : { _type : 'string', _default : '1 smith st' },
+					postcode : { _type : 'number', _default : 4000, _optional : true },
+
+					work : {
+
+						suburb : 'string',
+						somearray : { _type : 'array', _values : [1,2,3] },
+						emptyobject : { _type : 'object', _values : [{a:'a'}, {b:'b'}] }
+
+					}
+
+				}
+
+			}
+
+			var mydata = {
+
+				cars : {
+
+					excludedObject : {
+
+						wtf : true
+
+					},
+					excludedKey : 'ipsum',
+					hilux : 'toyota'
+
+				},
+
+				address : {
+
+					excludedKey : 'lorem',
+					postcode : 4520,
+
+					work : {
+
+						excludedKey : 'bam',
+						somearray : [14, 15]
+
+					}
+
+				},
+				colours : [ 'red', 'green', 'blue' ]
+
+			}
+
+			console.log(sg.schema.apply(myschema, mydata));
+
+		})();
+
 	</script>
 
 </head>
@@ -73,6 +145,16 @@
 
 			<aside ng-show="myInputChanging"><small class="muted">input is changing ...</small></aside>
 			<aside ng-show="myInputHasChanged"><small style="color: #a0e22d">sg.changed triggered</small></aside>
+
+		</section>
+
+		<section class="sg-changed" ng-controller="sgChangedController">
+			
+			<div class="page-header">
+				<h3>sg.schema</h3>
+			</div>
+
+			<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Saepe provident repellendus ad aperiam earum deleniti.</p>
 
 		</section>
 

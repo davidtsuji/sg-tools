@@ -99,7 +99,7 @@ var myschema = {
 
 				properties._default = _.isArray(properties['_default'])
 									? properties['_default']
-									: [properties['_values'][0]] || []
+									: (! _.isUndefined(properties['_values'][0]) ? [properties['_values'][0]] : [])
 
 			} else if (properties._type == 'object') {
 
@@ -230,18 +230,28 @@ var myschema = {
 
 				} else if ( ! properties._optional || ! _.isUndefined(_data[_key])) {
 
-					_data[_key] = $this._parseValue(properties._type, _data[_key], properties._values, properties._format);
+					if (_.isObject(_data[_key]) && ! _.isArray(_data[_key])) {
 
-					if ( /date/.test(properties._type)) {
+						_result[_key] = $this._validateKeys(_result[_key] || {}, _schema[_key], _data[_key]);
 
-						_result[_key] = _.isEmpty(_data[_key]) ? Date() : _data[_key];
-						
 					} else {
 
-						_result[_key] = typeof _data[_key] == properties._type ? _data[_key] : properties._default;
+						_data[_key] = $this._parseValue(properties._type, _data[_key], properties._values, properties._format);
+
+						if ( /date/.test(properties._type)) {
+
+							_result[_key] = _.isEmpty(_data[_key]) ? Date() : _data[_key];
+							
+						} else {
+
+							var type = _.isArray(_data[_key]) ? 'array' : typeof _data[_key];
+
+							_result[_key] = type == properties._type ? _data[_key] : properties._default;
+
+						}
 
 					}
-
+					
 				}
 
 			});
