@@ -1,257 +1,140 @@
 
-/*
-
-var myschema = {
-
-	name : 'string',
-	ismale : { _type : 'boolean', _default : true, _optional : true },
-	age : { _type : 'number' },
-	height : 'number',
-
-	address : {
-
-		street : { _type : 'string', _default : '1 smith st' },
-		postcode : { _type : 'number', _default : 4000, _optional : true },
-
-		work : {
-
-			suburb : 'string',
-			somearray : { _type : 'array', _values : [1,2,3] },
-			emptyobject : { _type : 'object', _values : [{a:'a'}, {b:'b'}] }
-
-		}
-
-	}
-
-}
-
-*/
-
 ;(function(){
 
-	var sgSchemaClass = function(){
-
-		this.typeRx        = /(string|number|boolean|array|object|date)/i;
-		this.privateKeysRx = /(_type|_optional|_default|_values|_pattern|_format)/i
-
-	}
+	var sgSchemaClass = function(){ }
 
 	sgSchemaClass.prototype = {
 
 		constructor: sgSchemaClass,
 
-		_parseSchemaProperties : function(_schema) {
+		cast : function(_value, _castType, _default, _values) {
+
+			var $this = this
+			  , parsedValue
+			  , valueType
+			  , value
+			  , values = typeof _values == 'object' && _values.constructor == Array ? _values : [];
+
+			if ( ! _.isUndefined(_value) && ! _.isNull(_value)) valueType = _value.constructor
+
+			if (valueType === _castType) {
+
+				value = _value;
+
+			} else {
+
+				switch(true) {
+
+					case _castType == Array && ! _.isNull(_value) && ! _.isUndefined(_value):
+
+						value = [_value];
+
+					break;
+
+					case _castType == Boolean:
+
+						try {
+
+							value = /^(true|1|y|yes)$/i.test(_value.toString()) ? true : undefined
+
+						}catch(e) {}
+
+						value = _.isBoolean(value) ? value : ( ! _.isUndefined(_default) && ! _.isNull(_default) ? _default : false )
+
+					break;
+
+					case _castType == Date:
+
+						try {
+
+							value = new Date(_value);
+							value = isNaN(value.getTime()) ? null : value;
+
+						} catch(e) {}
+
+					break;
+
+					case _castType == String:
+
+						try {
+
+							value = JSON.stringify(_value);
+							if ( _.isUndefined(value) ) throw '';
+
+						} catch(e) {
+
+							try { value = _value.toString() } catch(e){}
+
+						}
+
+					break;
+
+					default:
+
+						try { value = $this.cast(JSON.parse(_value), _castType) } catch(e) {}
+
+					break;
+
+				}
+
+			}
+
+			if (values.length > 0 && ! _.contains(values, value)) value = values[0];
+
+			return _.isUndefined(value) || _.isNull(value) || value == 'null' ? _default : value;
+
+		},
+
+		getSchemaProperties : function(_properties) {
 
 			var $this = this
 			  , properties
 
-			if (_.isString(_schema)) {
-
-				properties = {
-
-					_type     : $this.typeRx.test(_schema) ? _schema : 'string',
-					_optional : false,
-					_default  : '',
-					_values	  : [],
-					_format   : '',
-					
-				}
-
-			} else if (_.isObject(_schema)) {
-
-				properties = {
-
-					_type     : $this.typeRx.test(_schema['_type']) ? _schema['_type'] : 'object',
-					_optional : _.isBoolean(_schema['_optional']) ? _schema['_optional'] : false,
-					_default  : ! _.isUndefined(_schema['_default']) ? _schema['_default'] : null,
-					_format   : ! _.isUndefined(_schema['_format']) ? _schema['_format'] : '',
-					_values   : ! _.isUndefined(_schema['_values'])
-								? ( _.isString(_schema['_values'])
-										? [_schema['_values']]
-										: (_.isArray(_schema['_values']) ? _schema['_values'] : []) ) 
-								: []
-					
-				}
-
-			}
-
-			if (_.isUndefined(properties)) return;
-
-			if (properties._type == 'string') {
-
-				properties._default = _.isString(properties['_default'])
-									? properties['_default']
-									: properties['_values'][0] || ''
-
-			} else if (properties._type == 'number') {
-
-				properties._default = _.isNumber(properties['_default'])
-									? properties['_default']
-									: properties['_values'][0] || 0
-
-			} else if (properties._type == 'boolean') {
-
-				properties._default = _.isBoolean(properties['_default'])
-									? properties['_default']
-									: properties['_values'][0] || false
-
-			} else if (properties._type == 'array') {
-
-				properties._default = _.isArray(properties['_default'])
-									? properties['_default']
-									: (! _.isUndefined(properties['_values'][0]) ? [properties['_values'][0]] : [])
-
-			} else if (properties._type == 'object') {
-
-				properties._default = _.isObject(properties['_default']) && ! _.isEmpty(properties['_default'])
-									? properties['_default']
-									: properties['_values'][0] || {}
-
-			}
+			properties               = $this.cast(_properties, Object, { _type : _properties });
+			properties._type         = _.has(properties, '_type') ? properties._type : Object;
+			properties._optional     = $this.cast(properties['_optional'], Boolean, false);
+			properties._default      = properties['_default'];
+			properties._values       = $this.cast(properties['_values'], Array, []);
+			properties._typeAsString = $this.cast(properties._type, String, '').match(/^function ([^\(]*)\(\)/)[1];
+			properties._typeDefault  = $this.defaults[properties._typeAsString];
 
 			return properties;
 
 		},
 
-		_parseValue : function(_type, _value, _values, _format) {
-
-			if (_.isString(_value) || _.isNumber(_value)) {
-
-				if (_type == 'number') {
-
-					_value = _.isNaN(parseFloat(_value)) ? 0 : parseFloat(_value);
-
-				} else if (_type == 'string') {
-
-					try {
-
-						_value = _value.toString();
-
-					} catch(e) {
-
-						_value = null;
-
-					}
-
-				}  else if (_type == 'boolean') {
-
-					_value = /^(true|1|yes)$/i.test(_value)
-
-				} else if (_type == 'array') {
-
-					try {
-
-						_value = JSON.parse(_value);
-
-					} catch(e) {
-
-						_value = []
-
-					}
-					
-				} else if (_type == 'object') {
-
-					try {
-
-						_value = JSON.parse(_value);
-
-					} catch(e) {
-
-						_value = {}
-
-					}
-
-				} else if (_type == 'date') {
-
-					try {
-
-						var dte = moment(_value)
-
-						if (dte.isValid() == false) {
-
-							dte = moment(_value, 'DD/MM/YYYY')
-
-							if (dte.isValid() == false) throw Error('Cannot parse as moment date');
-
-						}
-
-						_value = dte.format(_format || '');
-
-					} catch(e) {
-
-						_value = new Date(_value);
-
-					}
-
-				}
-
-				if (_values.length > 0) _value = _.where(_values, _value).length > 0 ? _value : undefined;
-
-			}
-
-			if (_type == 'boolean') {
-
-				_value = _.isBoolean(_value) ? _value : _.isNumber(_value) && _value == 1
-
-			}
-
-			return _value;
-
-		},
-
-		_validateKeys : function(_result, _schema, _data) {
+		parseResult : function(_result, _data, _disableAutoDefauts) {
 
 			var $this = this
+			  , properties
+			  , objectData
+			  , defaultData
+			  , dataIsEmpty
 
-			_.each(_.keys(_schema), function(_key) {
+			_.each(_result, function(_properties, _key) {
 
-				var properties
+				properties = $this.getSchemaProperties(_properties);
 
-				if ($this.privateKeysRx.test(_key)) return;
+				objectData  = {};
+				defaultData = ! _.isUndefined(properties._default) || _disableAutoDefauts ? properties._default : properties._typeDefault;
+				dataIsEmpty = _data[_key];
 
-				properties = $this._parseSchemaProperties(_schema[_key]);
+				_.each(_.keys(properties), function(_key){
 
-				if ( ! _.isObject(properties)) return _result[_key] = _schema[_key];
+					if (/^[^_]/.test(_key)) objectData[_key] = properties[_key];
 
-				if (properties._type == 'object' && ! ( _.isObject(_data[_key]) &&  ! _.isArray(_data[_key]) ) ) {
+				});
 
-					if ( ! properties._optional || ! _.isUndefined(_data[_key])) {
+				if (properties._optional == false || (properties._optional == true && ! _.isUndefined(_data[_key]))) {
 
-						_data[_key]   = _.isObject(_data[_key]) && ! _.isEmpty(_data[_key]) ? _data[_key] : properties._default;
-						_result[_key] = $this._validateKeys(_result[_key] || {}, _schema[_key], _data[_key]);
+					_result[_key] = _.isEmpty(objectData)
+					              ? $this.cast(_data[_key], properties._type, defaultData, properties._values)
+					              : $this.parseResult(objectData, $this.cast(_data[_key], Object, {}), defaultData, _disableAutoDefauts);
 
-						if (_.isEmpty(_result[_key])) {
 
-							_result[_key] = properties._default;
+				} else {
 
-						}
+					delete _result[_key];
 
-					}
-
-				} else if ( ! properties._optional || ! _.isUndefined(_data[_key])) {
-
-					if (_.isObject(_data[_key]) && ! _.isArray(_data[_key])) {
-
-						_result[_key] = $this._validateKeys(_result[_key] || {}, _schema[_key], _data[_key]);
-
-					} else {
-
-						_data[_key] = $this._parseValue(properties._type, _data[_key], properties._values, properties._format);
-
-						if ( /date/.test(properties._type)) {
-
-							_result[_key] = _.isEmpty(_data[_key]) ? Date() : _data[_key];
-							
-						} else {
-
-							var type = _.isArray(_data[_key]) ? 'array' : typeof _data[_key];
-
-							_result[_key] = type == properties._type ? _data[_key] : properties._default;
-
-						}
-
-					}
-					
 				}
 
 			});
@@ -260,25 +143,12 @@ var myschema = {
 
 		},
 
-		apply : function(_schema, _data) {
+		apply : function(_schema, _data, _disableAutoDefauts) {
 
-			var $this = this;
+			var $this = this
+			  , schema = $.extend(true, {}, _schema || {})
 
-			if (_.isArray(_data)) {
-
-				_.each(_data, function(_value, _key){
-
-					_data[_key] = _.isEmpty(_schema) ? _value : $this._validateKeys({}, _schema, _value);
-
-				});
-				
-			} else {
-
-				_data = _.isEmpty(_schema) ? _data : $this._validateKeys({}, _schema, _data);
-
-			}
-
-			return _data;
+			return $this.parseResult(schema, _data, _disableAutoDefauts);
 
 		}
 
@@ -287,6 +157,15 @@ var myschema = {
 	window.sg = window['sg'] || {};
 	sg.schema = new sgSchemaClass();
 
-	sg.schema.defaults = { }
+	sg.schema.defaults = {
+
+		'Array'   : [],
+		'Boolean' : false,
+		'Date'    : new Date(),
+		'Number'  : 0,
+		'Object'  : {},
+		'String'  : '',
+
+	}
 
 })();
