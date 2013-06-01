@@ -2,20 +2,51 @@
 ;(function(){
 
 	var sgSchemaClass = function(){ }
+	  , argumentHash = function(){
+
+			var result = ''
+
+			_.each(arguments, function(_argument){
+
+				var stringified
+
+				switch(true) {
+
+					case typeof(_argument) == 'object':
+
+						stringified = JSON.stringify(_argument);
+
+					break;
+
+					default:
+					
+						stringified = _argument;
+
+					break;
+
+				}
+
+				result = result + stringified;
+
+			});
+
+			return result;
+
+		}
 
 	sgSchemaClass.prototype = {
 
 		constructor: sgSchemaClass,
 
-		cast : function(_value, _castType, _default, _values) {
+		cast : _.memoize(function(_value, _castType, _default, _values, _additionalProperties) {
 
 			var $this = this
 			  , parsedValue
 			  , valueType
 			  , value
-			  , values = typeof _values == 'object' && _values.constructor == Array ? _values : [];
+			  , values = _.isArray(_values) ? _values : [];
 
-			if ( ! _.isUndefined(_value) && ! _.isNull(_value)) valueType = _value.constructor
+			try { valueType = _value.constructor } catch(e){}
 
 			if (valueType === _castType) {
 
@@ -50,10 +81,22 @@
 							value = new Date(_value);
 							value = isNaN(value.getTime()) ? null : value;
 
-						} catch(e) {}
+						}catch(e){}
 
 					break;
 
+					case _castType == 'Moment':
+					
+						value = moment(_value);
+
+						if (value && value.isValid() && _.isObject(_additionalProperties) && _.has(_additionalProperties, '_dateFormat')) {
+
+							value = value.format(_additionalProperties._dateFormat);
+
+						}
+
+					break;
+					
 					case _castType == String:
 
 						try {
@@ -66,6 +109,17 @@
 							try { value = _value.toString() } catch(e){}
 
 						}
+
+					break;
+
+					case _castType == Number:
+
+						try {
+
+							value = parseFloat(_value);
+							if (isNaN(value)) value = undefined;
+
+						} catch(e){ value = undefined }
 
 					break;
 
@@ -83,19 +137,19 @@
 
 			return _.isUndefined(value) || _.isNull(value) || value == 'null' ? _default : value;
 
-		},
+		}, argumentHash),
 
 		getSchemaProperties : function(_properties) {
 
 			var $this = this
 			  , properties
 
-			properties               = $this.cast(_properties, Object, { _type : _properties });
+			properties               = typeof(_properties) == 'object' ? _properties : /function|string/i.test(typeof(_properties)) ? { _type : _properties } : {};
 			properties._type         = _.has(properties, '_type') ? properties._type : Object;
 			properties._optional     = $this.cast(properties['_optional'], Boolean, false);
 			properties._default      = properties['_default'];
 			properties._values       = $this.cast(properties['_values'], Array, []);
-			properties._typeAsString = $this.cast(properties._type, String, '').match(/^function ([^\(]*)\(\)/)[1];
+			properties._typeAsString = typeof(properties._type) == 'string' ? properties._type : $this.cast(properties._type, String, '').match(/^function ([^\(]*)\(\)/)[1];
 			properties._typeDefault  = $this.defaults[properties._typeAsString];
 
 			return properties;
@@ -127,9 +181,8 @@
 				if (properties._optional == false || (properties._optional == true && ! _.isUndefined(_data[_key]))) {
 
 					_result[_key] = _.isEmpty(objectData)
-					              ? $this.cast(_data[_key], properties._type, defaultData, properties._values)
-					              : $this.parseResult(objectData, $this.cast(_data[_key], Object, {}), defaultData, _disableAutoDefauts);
-
+					              ? $this.cast(_data[_key], properties._type, defaultData, properties._values, properties)
+					              : $this.parseResult(objectData, $this.cast(_data[_key], Object, {}), defaultData, _disableAutoDefauts, properties);
 
 				} else {
 
@@ -147,8 +200,9 @@
 
 			var $this = this
 			  , schema = $.extend(true, {}, _schema || {})
+			  , data = $.extend(true, {}, _data || {})
 
-			return $this.parseResult(schema, _data, _disableAutoDefauts);
+			return _.isEmpty(schema) ? _data : $this.parseResult(schema, data, _disableAutoDefauts);
 
 		}
 
@@ -162,6 +216,7 @@
 		'Array'   : [],
 		'Boolean' : false,
 		'Date'    : new Date(),
+		'Moment'  : window['moment'] ? moment() : new Date(),
 		'Number'  : 0,
 		'Object'  : {},
 		'String'  : '',
